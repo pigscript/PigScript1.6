@@ -757,12 +757,11 @@ class paint:
 			num=int(c)
 		except:
 			num=20
-		if c=='2':
-			print('Set your printing speed(default is 7, lower is faster):')
-			try:
-				sp=float(input())
-			except:
-				sp=7
+		print('Set your printing speed(default is 7, lower is faster):')
+		try:
+			sp=float(input())
+		except:
+			sp=7
 		print('Ready to print, please press enter to start')
 		c=input()
 		self.setcolor(255,255,255)
