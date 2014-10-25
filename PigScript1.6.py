@@ -628,7 +628,7 @@ class paint:
 
 	def autoplot(self,mode=1,rtl=1,rtu=1,s='',speed=7):
 		a,b = self.center_x, self.center_y
-		target = [(250,15,225)]
+		target = [(250,15,225),(250,0,0)]
 		if mode>0:
 			self.mouse.move(1,100)
 			time.sleep(2)
@@ -677,6 +677,7 @@ class paint:
 		if mode==0 or mode==2:
 			self.setcolor(random.randint(0,255),random.randint(0,255),random.randint(0,255))
 		if mode==0 or mode==1:
+			radius=min(radiusx,radiusy)
 			for i in range(2*n+1):
 				angle=math.pi*theta/180
 				x0=cx+int(radius*math.cos(angle))
@@ -740,6 +741,9 @@ class paint:
 				break
 		if c=='1':
 			m=1
+			n=1
+			w=''
+			sp=7
 		else:
 			m=3
 			w=input("Input the word you want to print(default is 'LOL'): ")
