@@ -635,6 +635,7 @@ class paint:
 			im=grab()
 			bad_count=0
 			pix=[[0 for i in range(14)]for j in range(14)]
+			aux=[[[0,0] for i in range(14)]for j in range(14)]
 			tot=0
 			for j in range(210):
 				for i in range(210):
@@ -649,27 +650,40 @@ class paint:
 							break
 			if tot<4000:
 				return 0
-			find_square=0
-			for sizex in range(14,4,-1):
-				for sizey in range(round(sizex*rtu),max(2,round(sizex*rtl)),-1):
-					for x in range(15-sizex):
-						for y in range(15-sizey):
-							gridcount=sum([sum(pix[y+k][x:x+sizex]) for k in range(sizey)])
-							if gridcount==sizex*sizey:
-								find_square=1
-								cx = a-210+15*(2*x+sizex)
-								cy = b-210+15*(2*y+sizey)
-								radiusx = 15*sizex - 30
-								radiusy = 15*sizey - 30
-								break
-						if find_square==1:
-							break
-					if find_square==1:
-						break
-				if find_square==1:
-					break
-			if find_square==0:
+			maxsize=0
+			bestx=0
+			besty=0
+			aux[0][0]=[pix[0][0],pix[0][0]]
+			for j in range(1,14):
+				if pix[0][j]==1:
+					aux[0][j][1]=1
+					aux[0][j][0]=aux[0][j-1][0]+1
+				if pix[j][0]==1:
+					aux[j][0][0]=1
+					aux[j][0][1]=aux[j-1][0][1]+1
+			if mode<=1:
+				c1,c2=0,1
+			else:
+				c1,c2=1,0
+			for j in range(1,14):
+				for i in range(1,14):
+					if pix[j][i]==1:
+						aux[j][i][0]=min(aux[j-1][i][0],aux[j][i-1][0],aux[j-1][i-1][0])+1
+						aux[j][i][1]=min(aux[j-1][i][1],aux[j][i-1][1],aux[j-1][i-1][1])+1
+						sz=c1*aux[j][i][0]*aux[j][i][1]+c2*min(aux[j][i])
+						if sz>maxsize:
+							maxsize=sz
+							bestx=i
+							besty=j
+			width,height=aux[besty][bestx]
+			if width<=4 or height<=4:
 				return 0
+			lx=bestx-width+1
+			ly=besty-height+1
+			cx = a-210+15*(2*lx+width)
+			cy = b-210+15*(2*ly+height)
+			radiusx = 15*width - 30
+			radiusy = 15*height - 30
 		n=random.randint(4,8)
 		theta=random.randint(0,360)
 		if mode<0:
@@ -688,7 +702,16 @@ class paint:
 				y1=cy+int(radius*math.sin(angle))
 				self.drawline(x0,y0,x1,y1)
 		elif mode==2 or mode==3:
-			self.Hershey(s,cx-radiusx,cy+radiusy,2*radiusx,2*radiusy,speed)
+			ln=len(s)
+			rt=radiusx/radiusy
+			if 3*rt<ln:
+				self.Hershey(s,cx-radiusx,cy+radiusy,2*radiusx,radiusy/1.2,speed)
+				self.Hershey(s,cx-radiusx,cy,2*radiusx,radiusy/1.2,speed)
+			elif rt>ln*3:
+				self.Hershey(s,cx-radiusx,cy+radiusy,radiusx/1.2,2*radiusy,speed)
+				self.Hershey(s,cx,cy+radiusy,radiusx/1.2,2*radiusy,speed)
+			else:
+				self.Hershey(s,cx-radiusx,cy+radiusy,2*radiusx,2*radiusy,speed)
 		return 1
 
 	def typeletter(self,letter,llx,lly,scx,scy,speed=7):
@@ -765,19 +788,27 @@ class paint:
 		print('Ready to print, please press enter to start')
 		c=input()
 		self.setcolor(255,255,255)
+		a=0
 		while True:
 			h_c+=1
-			self.autoplot(mode=m,rtl=0.8/n, rtu=max(1,3/n), s=w,speed=sp)
+			a+=self.autoplot(mode=m,rtl=0.9/n, rtu=1.5/n, s=w,speed=sp)
 			time.sleep(1)
 			if h_c == num:
 				h_c=0
 				v_c+=1
-				self.shift('down',1.5)
+				if v_c>40:
+					break
+				self.shift('down',1.6)
 			elif v_c%2 == 0:
-				self.shift('right',1.5)
+				self.shift('right',0.8)
+				time.sleep(2)
+				self.shift('right',0.9)
 			else:
-				self.shift('left',1.5)
+				self.shift('left',0.8)
+				time.sleep(2)
+				self.shift('left',0.9)
 			time.sleep(1)
+		print(a,'spammed')
 
 #main
 m=PyMouse()
@@ -787,7 +818,7 @@ while True:
 	print('*'*20)
 	print('   PigScript v1.6   ')
 	print('*'*20)
-	print(' 1. Draw a local picture\n 2. Draw a website picture\n 3. Draw curves\n 4. Meteor Shower \n 5. Print words\n 6. Exit')
+	print(' 1. Draw a local picture\n 2. Draw a website picture\n 3. Draw curves\n 4. Meteor Shower \n 5. Print text\n 6. Exit')
 	while True:
 		c=getch().decode()
 		if c in '123456':
@@ -803,12 +834,12 @@ while True:
 		print('Please manually set your color and pen size on the ball, then press enter to print')
 		input()
 		pen.Hershey(w,pen.center_x-250,pen.center_y+int(ht),500,ht*2)
-		continue
+		break
 	elif source==4:
 		pen.MeteorShower()
 	elif source==3:
 		pen.plotcurve()
-		continue
+		break
 	elif source==2:
 		filename = input('URL of the picture: ')
 	else:
